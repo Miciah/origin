@@ -5,7 +5,7 @@
 %global commit      d3f40eafae8ae7bbca61981e33f384375307fafa
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
-Name:           origin
+Name:           openshift
 Version:        0.2
 #Release:        1git%{shortcommit}%{?dist}
 Release:        2%{?dist}
