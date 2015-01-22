@@ -18,10 +18,25 @@ Source0:        https://%{import_path}/archive/%{commit}/%{name}-%{version}.tar.
 BuildRequires:  systemd
 BuildRequires:  golang >= 1.2-7
 
-Requires:       docker-io >= 1.3.2
 
 %description
 %{summary}
+
+%package master
+Summary:        Openshift Master
+Requires:       openshift = %{version}-%{release}
+
+%description master
+%{summary}
+
+%package node
+Summary:        Openshift Node
+Requires:       openshift = %{version}-%{release}
+Requires:       docker-io >= 1.3.2
+
+%description node
+%{summary}
+
 
 %prep
 %setup -q
@@ -69,10 +84,12 @@ do
 done
 
 install -d -m 0755 %{buildroot}%{_unitdir}
-install -m 0644 -t %{buildroot}%{_unitdir} rel-eng/openshift.service
+install -m 0644 -t %{buildroot}%{_unitdir} rel-eng/openshift-master.service
+install -m 0644 -t %{buildroot}%{_unitdir} rel-eng/openshift-node.service
 
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
-install -m 0644 rel-eng/openshift.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/openshift
+install -m 0644 rel-eng/openshift-master.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/openshift-master
+install -m 0644 rel-eng/openshift-node.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/openshift-node
 
 mkdir -p %{buildroot}/var/log/%{name}
 
@@ -86,18 +103,37 @@ ln -s %{_bindir}/openshift %{buildroot}%{_bindir}/osc
 %dir /var/log/%{name}
 %{_bindir}/openshift
 %{_bindir}/osc
-%{_unitdir}/*.service
-%config(noreplace) %{_sysconfdir}/sysconfig/openshift
 %{_sharedstatedir}/%{name}
 
-%post
-%systemd_post %{basename:openshift.service}
+%files master
+%defattr(-,root,root,-)
+%{_unitdir}/openshift-master.service
+%config(noreplace) %{_sysconfdir}/sysconfig/openshift-master
 
-%preun
-%systemd_preun %{basename:openshift.service}
+%post master
+%systemd_post %{basename:openshift-master.service}
 
-%postun
+%preun master
+%systemd_preun %{basename:openshift-master.service}
+
+%postun master
 %systemd_postun
+
+
+%files node
+%defattr(-,root,root,-)
+%{_unitdir}/openshift-node.service
+%config(noreplace) %{_sysconfdir}/sysconfig/openshift-node
+
+%post node
+%systemd_post %{basename:openshift-node.service}
+
+%preun node
+%systemd_preun %{basename:openshift-node.service}
+
+%postun node
+%systemd_postun
+
 
 %changelog
 * Mon Jan 19 2015 Scott Dodson <sdodson@redhat.com> 0.2-2
