@@ -33,8 +33,16 @@ Requires:       openshift = %{version}-%{release}
 Summary:        Openshift Node
 Requires:       openshift = %{version}-%{release}
 Requires:       docker-io >= 1.3.2
+Requires:       tuned-profiles-openshift-node
 
 %description node
+%{summary}
+
+%package -n tuned-profiles-openshift-node
+Summary:        Tuned profiles for Openshift Node hosts
+Requires:       tuned >= 2.3
+
+%description -n tuned-profiles-openshift-node
 %{summary}
 
 
@@ -97,6 +105,9 @@ mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 ln -s %{_bindir}/openshift %{buildroot}%{_bindir}/osc
 
+mkdir -p %{buildroot}/usr/lib/tuned/openshift-node
+install -m 0644 -t %{buildroot}/usr/lib/tuned/openshift-node tuned/openshift-node/tuned.conf
+
 %files
 %defattr(-,root,root,-)
 %doc README.md LICENSE
@@ -133,6 +144,16 @@ ln -s %{_bindir}/openshift %{buildroot}%{_bindir}/osc
 
 %postun node
 %systemd_postun
+
+%files -n tuned-profiles-openshift-node
+%defattr(-,root,root,-)
+%{_prefix}/lib/tuned/openshift-node
+
+%post -n tuned-profiles-openshift-node
+/usr/sbin/tuned-adm profile openshift-node
+
+%postun -n tuned-profiles-openshift-node
+/usr/sbin/tuned-adm profile default
 
 
 %changelog
