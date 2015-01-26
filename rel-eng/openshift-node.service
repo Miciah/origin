@@ -11,4 +11,4 @@ ExecStart=/usr/bin/openshift start $ROLE $OPTIONS
 WorkingDirectory=/var/lib/openshift/
 
 [Install]
-antedBy=multi-user.target
+WantedBy=multi-user.target
