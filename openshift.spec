@@ -2,7 +2,9 @@
 %global debug_package %{nil}
 %global gopath      %{_datadir}/gocode
 %global import_path github.com/openshift/origin
-%global commit      21fb40637c4e3507cca1fcab6c4d56b06950a149
+%{!?commit:
+%global commit 21fb40637c4e3507cca1fcab6c4d56b06950a149
+}
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           openshift
