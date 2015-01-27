@@ -25,6 +25,7 @@ BuildRequires:  golang >= 1.2-7
 %package master
 Summary:        Openshift Master
 Requires:       openshift = %{version}-%{release}
+Requires:       openshift-sdn
 
 %description master
 %{summary}
@@ -34,6 +35,7 @@ Summary:        Openshift Node
 Requires:       openshift = %{version}-%{release}
 Requires:       docker-io >= 1.3.2
 Requires:       tuned-profiles-openshift-node
+Requires:       openshift-sdn
 
 %description node
 %{summary}
