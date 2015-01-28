@@ -8,9 +8,9 @@
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           openshift
-Version:        0.2
+Version:        0.2.1
 #Release:        1git%{shortcommit}%{?dist}
-Release:        3%{?dist}
+Release:        1%{?dist}
 Summary:        Open Source Platform as a Service by Red Hat
 License:        ASL 2.0
 URL:            https://%{import_path}
@@ -158,6 +158,9 @@ install -m 0644 -t %{buildroot}/usr/lib/tuned/openshift-node tuned/openshift-nod
 
 
 %changelog
+* Wed Jan 28 2015 Scott Dodson <sdodson@redhat.com> 0.2.1-1
+- new package built with tito
+
 * Mon Jan 26 2015 Scott Dodson <sdodson@redhat.com> 0.2-3
 - Update to 21fb40637c4e3507cca1fcab6c4d56b06950a149
 - Split packaging of openshift-master and openshift-node
