@@ -3,14 +3,14 @@
 %global gopath      %{_datadir}/gocode
 %global import_path github.com/openshift/origin
 %{!?commit:
-%global commit f513f071e64657b6b6a455d7cb7719f297a4456d
+%global commit 51f3f44df8b9b84d2167bd4d9a43c6c88bf222a3
 }
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           openshift
 Version:        0.2
 #Release:        1git%{shortcommit}%{?dist}
-Release:        14%{?dist}
+Release:        16%{?dist}
 Summary:        Open Source Platform as a Service by Red Hat
 License:        ASL 2.0
 URL:            https://%{import_path}
@@ -161,6 +161,12 @@ install -m 0644 -t %{buildroot}/usr/lib/tuned/openshift-node tuned/openshift-nod
 
 
 %changelog
+* Wed Jan 28 2015 Scott Dodson <sdodson@redhat.com> 0.2-16
+- 
+
+* Wed Jan 28 2015 Scott Dodson <sdodson@redhat.com>
+- 
+
 * Wed Jan 28 2015 Scott Dodson <sdodson@redhat.com> 0.2-14
 - new package built with tito
 
