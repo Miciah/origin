@@ -103,8 +103,6 @@ mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 rel-eng/openshift-master.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/openshift-master
 install -m 0644 rel-eng/openshift-node.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/openshift-node
 
-mkdir -p %{buildroot}/var/log/%{name}
-
 mkdir -p %{buildroot}%{_sharedstatedir}/%{name}
 
 ln -s %{_bindir}/openshift %{buildroot}%{_bindir}/osc
@@ -115,7 +113,6 @@ install -m 0644 -t %{buildroot}/usr/lib/tuned/openshift-node tuned/openshift-nod
 %files
 %defattr(-,root,root,-)
 %doc README.md LICENSE
-%dir /var/log/%{name}
 %{_bindir}/openshift
 %{_bindir}/osc
 %{_sharedstatedir}/%{name}
