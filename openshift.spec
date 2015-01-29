@@ -3,14 +3,14 @@
 %global gopath      %{_datadir}/gocode
 %global import_path github.com/openshift/origin
 %{!?commit:
-%global commit 633770911726fbe6fddcd22e8fc7dcbf34236f97
+%global commit 580fd296ff80aa8f6ffa6ee39e10ee17233d6de4
 }
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           openshift
 Version:        0.2.1
 #Release:        1git%{shortcommit}%{?dist}
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Open Source Platform as a Service by Red Hat
 License:        ASL 2.0
 URL:            https://%{import_path}
@@ -158,6 +158,30 @@ install -m 0644 -t %{buildroot}/usr/lib/tuned/openshift-node tuned/openshift-nod
 
 
 %changelog
+* Thu Jan 29 2015 Scott Dodson <sdodson@redhat.com> 0.2.1-3
+- Skip client cert gen if it exists (jliggitt@redhat.com)
+- Skip server cert gen if exists and is valid (jliggitt@redhat.com)
+- Merge remote-tracking branch 'origin-upstream/master' into v0_2_1-packaging
+  (sdodson@redhat.com)
+- Merge pull request #777 from liggitt/public_master
+  (dmcphers+openshiftbot@redhat.com)
+- Merge pull request #748 from derekwaynecarr/project_should_have_no_ns
+  (dmcphers+openshiftbot@redhat.com)
+- Merge pull request #755 from smarterclayton/config_generator_errors
+  (dmcphers+openshiftbot@redhat.com)
+- Merge pull request #758 from sg00dwin/less-partials-split
+  (dmcphers+openshiftbot@redhat.com)
+- Set public kubernetes master when starting kube (jliggitt@redhat.com)
+- Update bindata.go (decarr@redhat.com)
+- Update ui code to not use project.metadata.namespace (decarr@redhat.com)
+- Align project with upstream resources that exist outside of namespace
+  (decarr@redhat.com)
+- Fix bindata.go for the less partials split (jforrest@redhat.com)
+- Splitting .less into partials and refactor of code. Including openshift-icon
+  font set for now. (sgoodwin@redhat.com)
+- Config Generator should not return raw errors via the REST API
+  (ccoleman@redhat.com)
+
 * Wed Jan 28 2015 Scott Dodson <sdodson@redhat.com> 0.2.1-2
 - 
 
