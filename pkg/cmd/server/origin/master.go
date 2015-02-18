@@ -60,12 +60,12 @@ import (
 	clientregistry "github.com/openshift/origin/pkg/oauth/registry/client"
 	clientauthorizationregistry "github.com/openshift/origin/pkg/oauth/registry/clientauthorization"
 	oauthetcd "github.com/openshift/origin/pkg/oauth/registry/etcd"
-	projectetcd "github.com/openshift/origin/pkg/project/registry/etcd"
 	projectregistry "github.com/openshift/origin/pkg/project/registry/project"
 	routeetcd "github.com/openshift/origin/pkg/route/registry/etcd"
 	routeregistry "github.com/openshift/origin/pkg/route/registry/route"
 	"github.com/openshift/origin/pkg/service"
 	templateregistry "github.com/openshift/origin/pkg/template/registry"
+	templateetcd "github.com/openshift/origin/pkg/template/registry/etcd"
 	"github.com/openshift/origin/pkg/user"
 	useretcd "github.com/openshift/origin/pkg/user/registry/etcd"
 	userregistry "github.com/openshift/origin/pkg/user/registry/user"
@@ -249,7 +249,6 @@ func (c *MasterConfig) InstallProtectedAPI(container *restful.Container) []strin
 	imageEtcd := imageetcd.New(c.EtcdHelper, imageetcd.DefaultRegistryFunc(defaultRegistryFunc))
 	deployEtcd := deployetcd.New(c.EtcdHelper)
 	routeEtcd := routeetcd.New(c.EtcdHelper)
-	projectEtcd := projectetcd.New(c.EtcdHelper)
 	userEtcd := useretcd.New(c.EtcdHelper, user.NewDefaultUserInitStrategy())
 	oauthEtcd := oauthetcd.New(c.EtcdHelper)
 	authorizationEtcd := authorizationetcd.New(c.EtcdHelper)
@@ -288,10 +287,11 @@ func (c *MasterConfig) InstallProtectedAPI(container *restful.Container) []strin
 		"deploymentConfigRollbacks": deployrollback.NewREST(deployRollbackClient, latest.Codec),
 
 		"templateConfigs": templateregistry.NewREST(),
+		"templates":       templateetcd.NewREST(c.EtcdHelper),
 
 		"routes": routeregistry.NewREST(routeEtcd),
 
-		"projects": projectregistry.NewREST(projectEtcd),
+		"projects": projectregistry.NewREST(kclient.Namespaces()),
 
 		"userIdentityMappings": useridentitymapping.NewREST(userEtcd),
 		"users":                userregistry.NewREST(userEtcd),
