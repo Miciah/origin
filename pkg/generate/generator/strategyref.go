@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -80,6 +81,10 @@ func (g *BuildStrategyRefGenerator) FromSourceRefAndDockerContext(srcRef app.Sou
 		}
 	}
 
+	if len(context) > 0 {
+		srcRef.ContextDir = context
+	}
+
 	// Look for Dockerfile in repository
 	file, err := os.Open(filepath.Join(srcRef.Dir, context, "Dockerfile"))
 	if err != nil {
@@ -102,16 +107,15 @@ func (g *BuildStrategyRefGenerator) FromSourceRefAndDockerContext(srcRef app.Sou
 		return nil, err
 	}
 
-	return g.FromDockerContextAndParent(context, parentRef)
+	return g.FromDockerContextAndParent(parentRef)
 
 }
 
 // FromContextAndParent generates a build strategy ref from a context path and parent image name
-func (g *BuildStrategyRefGenerator) FromDockerContextAndParent(context string, parentRef *app.ImageRef) (*app.BuildStrategyRef, error) {
+func (g *BuildStrategyRefGenerator) FromDockerContextAndParent(parentRef *app.ImageRef) (*app.BuildStrategyRef, error) {
 	return &app.BuildStrategyRef{
 		IsDockerBuild: true,
 		Base:          parentRef,
-		DockerContext: context,
 	}, nil
 }
 
@@ -163,11 +167,11 @@ func (g *BuildStrategyRefGenerator) getSource(srcRef *app.SourceRef) error {
 		return err
 	}
 	if err = g.gitRepository.Clone(srcRef.Dir, srcRef.URL.String()); err != nil {
-		return err
+		return fmt.Errorf("unable to clone repository at %s", srcRef.URL.String())
 	}
 	if len(srcRef.Ref) != 0 {
 		if err = g.gitRepository.Checkout(srcRef.Dir, srcRef.Ref); err != nil {
-			return err
+			return fmt.Errorf("unable to checkout reference %s from repository at %s", srcRef.Ref, srcRef.URL.String())
 		}
 	}
 	return nil

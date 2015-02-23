@@ -1,9 +1,10 @@
 package policy
 
 import (
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
 	"github.com/openshift/origin/pkg/client"
@@ -16,7 +17,7 @@ type addGroupOptions struct {
 	bindingNamespace string
 	client           client.Interface
 
-	groupNames []string
+	groups []string
 }
 
 func NewCmdAddGroup(f *clientcmd.Factory) *cobra.Command {
@@ -57,19 +58,24 @@ func (o *addGroupOptions) complete(cmd *cobra.Command) bool {
 	}
 
 	o.roleName = args[0]
-	o.groupNames = args[1:]
+	o.groups = args[1:]
 	return true
 }
 
 func (o *addGroupOptions) run() error {
-	roleBindings, roleBindingNames, err := getExistingRoleBindingsForRole(o.roleNamespace, o.roleName, o.bindingNamespace, o.client)
+	roleBindings, err := getExistingRoleBindingsForRole(o.roleNamespace, o.roleName, o.client.PolicyBindings(o.bindingNamespace))
 	if err != nil {
 		return err
 	}
-	roleBinding := (*authorizationapi.RoleBinding)(nil)
+	roleBindingNames, err := getExistingRoleBindingNames(o.client.PolicyBindings(o.bindingNamespace))
+	if err != nil {
+		return err
+	}
+
+	var roleBinding *authorizationapi.RoleBinding
 	isUpdate := true
 	if len(roleBindings) == 0 {
-		roleBinding = &authorizationapi.RoleBinding{}
+		roleBinding = &authorizationapi.RoleBinding{Groups: util.NewStringSet()}
 		isUpdate = false
 	} else {
 		// only need to add the user or group to a single roleBinding on the role.  Just choose the first one
@@ -79,10 +85,7 @@ func (o *addGroupOptions) run() error {
 	roleBinding.RoleRef.Namespace = o.roleNamespace
 	roleBinding.RoleRef.Name = o.roleName
 
-	groups := util.StringSet{}
-	groups.Insert(roleBinding.GroupNames...)
-	groups.Insert(o.groupNames...)
-	roleBinding.GroupNames = groups.List()
+	roleBinding.Groups.Insert(o.groups...)
 
 	if isUpdate {
 		_, err = o.client.RoleBindings(o.bindingNamespace).Update(roleBinding)

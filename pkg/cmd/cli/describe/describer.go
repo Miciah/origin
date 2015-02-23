@@ -68,9 +68,6 @@ func (d *BuildDescriber) DescribeParameters(p buildapi.BuildParameters, out *tab
 	formatString(out, "Strategy", p.Strategy.Type)
 	switch p.Strategy.Type {
 	case buildapi.DockerBuildStrategyType:
-		if p.Strategy.DockerStrategy != nil && len(p.Strategy.DockerStrategy.ContextDir) == 0 {
-			formatString(out, "Context Directory", p.Strategy.DockerStrategy.ContextDir)
-		}
 		if p.Strategy.DockerStrategy != nil && p.Strategy.DockerStrategy.NoCache {
 			formatString(out, "No Cache", "yes")
 		}
@@ -96,6 +93,9 @@ func (d *BuildDescriber) DescribeParameters(p buildapi.BuildParameters, out *tab
 		formatString(out, "URL", p.Source.Git.URI)
 		if len(p.Source.Git.Ref) > 0 {
 			formatString(out, "Ref", p.Source.Git.Ref)
+		}
+		if len(p.Source.ContextDir) > 0 {
+			formatString(out, "ContextDir", p.Source.ContextDir)
 		}
 	}
 	if p.Output.To != nil {
@@ -334,8 +334,8 @@ func (d *PolicyBindingDescriber) Describe(namespace, name string) (string, error
 			roleBinding := policyBinding.RoleBindings[key]
 			formatString(out, "RoleBinding["+key+"]", " ")
 			formatString(out, "\tRole", roleBinding.RoleRef.Name)
-			formatString(out, "\tUsers", roleBinding.UserNames)
-			formatString(out, "\tGroups", roleBinding.GroupNames)
+			formatString(out, "\tUsers", roleBinding.Users.List())
+			formatString(out, "\tGroups", roleBinding.Groups.List())
 		}
 
 		return nil
@@ -372,7 +372,7 @@ func (d *TemplateDescriber) DescribeParameters(params []templateapi.Parameter, o
 	}
 }
 
-func (d *TemplateDescriber) DescribeObjects(objects []runtime.Object, out *tabwriter.Writer) {
+func (d *TemplateDescriber) DescribeObjects(objects []runtime.Object, labels map[string]string, out *tabwriter.Writer) {
 	formatString(out, "Objects", " ")
 
 	indent := "    "
@@ -395,6 +395,10 @@ func (d *TemplateDescriber) DescribeObjects(objects []runtime.Object, out *tabwr
 		}
 		formatAnnotations(out, meta, indent)
 	}
+	if len(labels) > 0 {
+		out.Write([]byte("\n"))
+		formatString(out, indent+"Common Labels", formatLabels(labels))
+	}
 }
 
 func (d *TemplateDescriber) Describe(namespace, name string) (string, error) {
@@ -410,7 +414,7 @@ func (d *TemplateDescriber) Describe(namespace, name string) (string, error) {
 		out.Flush()
 		d.DescribeParameters(template.Parameters, out)
 		out.Write([]byte("\n"))
-		d.DescribeObjects(template.Objects, out)
+		d.DescribeObjects(template.Objects, template.ObjectLabels, out)
 		return nil
 	})
 }

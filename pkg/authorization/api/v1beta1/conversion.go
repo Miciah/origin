@@ -3,10 +3,10 @@ package v1beta1
 import (
 	"sort"
 
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/conversion"
-
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/api"
+	"github.com/GoogleCloudPlatform/kubernetes/pkg/conversion"
 	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
+
 	newer "github.com/openshift/origin/pkg/authorization/api"
 )
 
@@ -17,14 +17,16 @@ func init() {
 				return err
 			}
 
-			out.Verbs = []string{}
-			out.Verbs = append(out.Verbs, in.Verbs...)
+			out.Resources = util.StringSet{}
+			out.Resources.Insert(in.Resources...)
+			out.Resources.Insert(in.ResourceKinds...)
 
-			out.Resources = []string{}
-			out.Resources = append(out.Resources, in.Resources...)
-			out.Resources = append(out.Resources, in.ResourceKinds...)
+			out.Verbs = util.StringSet{}
+			out.Verbs.Insert(in.Verbs...)
 
 			out.ResourceNames = util.NewStringSet(in.ResourceNames...)
+
+			out.NonResourceURLs = util.NewStringSet(in.NonResourceURLsSlice...)
 
 			return nil
 		},
@@ -33,13 +35,15 @@ func init() {
 				return err
 			}
 
-			out.Verbs = []string{}
-			out.Verbs = append(out.Verbs, in.Verbs...)
-
 			out.Resources = []string{}
-			out.Resources = append(out.Resources, in.Resources...)
+			out.Resources = append(out.Resources, in.Resources.List()...)
+
+			out.Verbs = []string{}
+			out.Verbs = append(out.Verbs, in.Verbs.List()...)
 
 			out.ResourceNames = in.ResourceNames.List()
+
+			out.NonResourceURLsSlice = in.NonResourceURLs.List()
 
 			return nil
 		},
@@ -52,6 +56,26 @@ func init() {
 			out.LastModified = in.LastModified
 			out.Roles = make([]NamedRole, 0, 0)
 			return s.DefaultConvert(in, out, conversion.IgnoreMissingFields)
+		},
+		func(in *RoleBinding, out *newer.RoleBinding, s conversion.Scope) error {
+			if err := s.DefaultConvert(in, out, conversion.IgnoreMissingFields|conversion.AllowDifferentFieldTypeNames); err != nil {
+				return err
+			}
+
+			out.Users = util.NewStringSet(in.UserNames...)
+			out.Groups = util.NewStringSet(in.GroupNames...)
+
+			return nil
+		},
+		func(in *newer.RoleBinding, out *RoleBinding, s conversion.Scope) error {
+			if err := s.DefaultConvert(in, out, conversion.IgnoreMissingFields|conversion.AllowDifferentFieldTypeNames); err != nil {
+				return err
+			}
+
+			out.UserNames = in.Users.List()
+			out.GroupNames = in.Groups.List()
+
+			return nil
 		},
 		func(in *[]NamedRole, out *map[string]newer.Role, s conversion.Scope) error {
 			for _, curr := range *in {

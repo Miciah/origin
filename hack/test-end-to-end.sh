@@ -25,7 +25,17 @@ source "${OS_ROOT}/hack/util.sh"
 
 echo "[INFO] Starting end-to-end test"
 
+# Use either the latest release built images, or latest.
+if [[ -z "${USE_IMAGES-}" ]]; then
+	USE_IMAGES='openshift/origin-${component}:latest'
+	if [[ -e "${OS_ROOT}/_output/local/releases/.commit" ]]; then
+		COMMIT="$(cat "${OS_ROOT}/_output/local/releases/.commit")"
+		USE_IMAGES="openshift/origin-\${component}:${COMMIT}"
+	fi
+fi
+# TODO: remove the need for this by making all OpenShift components pullIfPresent
 USE_LOCAL_IMAGES="${USE_LOCAL_IMAGES:-true}"
+
 ROUTER_TESTS_ENABLED="${ROUTER_TESTS_ENABLED:-true}"
 
 if [[ -z "${BASETMPDIR-}" ]]; then
@@ -155,11 +165,17 @@ echo "[INFO] Server logs will be at:    ${LOG_DIR}/openshift.log"
 echo "[INFO] Test artifacts will be in: ${ARTIFACT_DIR}"
 echo "[INFO] Volumes dir is:            ${VOLUME_DIR}"
 echo "[INFO] Certs dir is:              ${CERT_DIR}"
+echo "[INFO] Using images:              ${USE_IMAGES}"
 
 # Start All-in-one server and wait for health
 # Specify the scheme and port for the listen address, but let the IP auto-discover.	Set --public-master to localhost, for a stable link to the console.
 echo "[INFO] Starting OpenShift server"
-sudo env "PATH=${PATH}" OPENSHIFT_ON_PANIC=crash openshift start --listen="${API_SCHEME}://0.0.0.0:${API_PORT}" --public-master="${API_SCHEME}://${PUBLIC_MASTER_HOST}" --hostname="127.0.0.1" --volume-dir="${VOLUME_DIR}" --etcd-dir="${ETCD_DATA_DIR}" --cert-dir="${CERT_DIR}" --loglevel=4 --latest-images &> "${LOG_DIR}/openshift.log" &
+sudo env "PATH=${PATH}" OPENSHIFT_ON_PANIC=crash openshift start \
+     --listen="${API_SCHEME}://0.0.0.0:${API_PORT}" --public-master="${API_SCHEME}://${PUBLIC_MASTER_HOST}" \
+     --hostname="127.0.0.1" --volume-dir="${VOLUME_DIR}" \
+     --etcd-dir="${ETCD_DATA_DIR}" --cert-dir="${CERT_DIR}" --loglevel=4 --latest-images \
+     --images="${USE_IMAGES}" \
+     &> "${LOG_DIR}/openshift.log" &
 OS_PID=$!
 
 if [[ "${API_SCHEME}" == "https" ]]; then
@@ -193,8 +209,12 @@ openshift ex new-project test --description="This is an example project to demon
 echo "The console should be available at ${API_SCHEME}://${PUBLIC_MASTER_HOST}:$(($API_PORT + 1)).	You may need to visit ${API_SCHEME}://${PUBLIC_MASTER_HOST}:${API_PORT} first to accept the certificate."
 echo "Log in as 'e2e-user' to see the 'test' project."
 
+# install the router
+echo "[INFO] Installing the router"
+openshift ex router --create --credentials="${KUBECONFIG}" --images="${USE_IMAGES}"
 
 # install the registry
+echo "[INFO] Installing the registry"
 CERT_DIR="${CERT_DIR}/openshift-client" hack/install-registry.sh
 
 echo "[INFO] Waiting for Docker registry pod to start"
@@ -246,16 +266,8 @@ wait_for_app "test"
 #wait_for_build "custom"
 #wait_for_app "custom"
 
-if [[ "$ROUTER_TESTS_ENABLED" == "true" ]]; then
-	echo "[INFO] Installing router with master url of ${API_SCHEME}://${CONTAINER_ACCESSIBLE_API_HOST}:${API_PORT} and starting pod..."
-	echo "[INFO] To disable router testing set ROUTER_TESTS_ENABLED=false..."
-	CERT_DIR="${CERT_DIR}/openshift-client" "${OS_ROOT}/hack/install-router.sh" "router1" "${API_SCHEME}://${CONTAINER_ACCESSIBLE_API_HOST}:${API_PORT}"
-	wait_for_command "osc get pods | grep router1 | grep -i Running" $((5*TIME_MIN))
+# ensure the router is started
+wait_for_command "osc get pods | grep router-1 | grep -i Running" $((5*TIME_MIN))
 
-	echo "[INFO] Validating routed app response..."
-	validate_response "-s -k --resolve www.example.com:443:${CONTAINER_ACCESSIBLE_API_HOST} https://www.example.com" "Hello from OpenShift" 0.2 50
-else
-	echo "[INFO] Validating app response..."
-	validate_response "http://${FRONTEND_IP}:5432" "Hello from OpenShift"
-fi
-
+echo "[INFO] Validating routed app response..."
+validate_response "-s -k --resolve www.example.com:443:${CONTAINER_ACCESSIBLE_API_HOST} https://www.example.com" "Hello from OpenShift" 0.2 50

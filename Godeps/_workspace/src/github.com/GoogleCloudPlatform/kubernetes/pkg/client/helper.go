@@ -18,7 +18,6 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -266,19 +265,6 @@ func HTTPWrappersForConfig(config *Config, rt http.RoundTripper) (http.RoundTrip
 	return rt, nil
 }
 
-// dataFromSliceOrFile returns data from the slice (if non-empty), or from the file,
-// or an error if an error occurred reading the file
-func dataFromSliceOrFile(data []byte, file string) ([]byte, error) {
-	if len(data) > 0 {
-		return data, nil
-	}
-	fileData, err := ioutil.ReadFile(file)
-	if err != nil {
-		return []byte{}, err
-	}
-	return fileData, nil
-}
-
 // DefaultServerURL converts a host, host:port, or URL string to the default base server API path
 // to use with a Client at a given API version following the standard conventions for a
 // Kubernetes API.
@@ -346,7 +332,9 @@ func IsConfigTransportTLS(config Config) bool {
 func defaultServerUrlFor(config *Config) (*url.URL, error) {
 	// TODO: move the default to secure when the apiserver supports TLS by default
 	// config.Insecure is taken to mean "I want HTTPS but don't bother checking the certs against a CA."
-	defaultTLS := config.CertFile != "" || config.Insecure
+	hasCA := len(config.CAFile) != 0 || len(config.CAData) != 0
+	hasCert := len(config.CertFile) != 0 || len(config.CertData) != 0
+	defaultTLS := hasCA || hasCert || config.Insecure
 	host := config.Host
 	if host == "" {
 		host = "localhost"
