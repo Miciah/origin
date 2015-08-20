@@ -14,12 +14,12 @@
 # %commit and %ldflags are intended to be set by tito custom builders provided
 # in the rel-eng directory. The values in this spec file will not be kept up to date.
 %{!?commit:
-%global commit 86b5e46426ba828f49195af21c56f7c6674b48f7
+%global commit 41f8397f66c532615040e0286a31ca91f01ce1e4
 }
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 # ldflags from hack/common.sh os::build:ldflags
 %{!?ldflags:
-%global ldflags -X github.com/openshift/origin/pkg/version.majorFromGit 0 -X github.com/openshift/origin/pkg/version.minorFromGit 0+ -X github.com/openshift/origin/pkg/version.versionFromGit v0.0.1 -X github.com/openshift/origin/pkg/version.commitFromGit 86b5e46 -X k8s.io/kubernetes/pkg/version.gitCommit 6241a21 -X k8s.io/kubernetes/pkg/version.gitVersion v0.11.0-330-g6241a21
+%global ldflags -X github.com/openshift/origin/pkg/version.majorFromGit 3 -X github.com/openshift/origin/pkg/version.minorFromGit 0+ -X github.com/openshift/origin/pkg/version.versionFromGit v3.0.1.0-1-443-g41f8397 -X github.com/openshift/origin/pkg/version.commitFromGit 41f8397 -X k8s.io/kubernetes/pkg/version.gitCommit 44c91b1 -X k8s.io/kubernetes/pkg/version.gitVersion v1.1.0-alpha.0-1605-g44c91b1
 }
 
 %if "%{dist}" == ".el7aos"
@@ -369,6 +369,12 @@ fi
 
 
 %changelog
+* Thu Aug 20 2015 Scott Dodson <sdodson@redhat.com> 3.0.1.100
+- new package built with tito
+
+* Thu Aug 20 2015 Scott Dodson <sdodson@redhat.com>
+- new package built with tito
+
 * Wed Aug 12 2015 Steve Milner <smilner@redhat.com> 0.2-8
 - Master configs will be generated if none are found when the master is installed.
 - Node configs will be generated if none are found when the master is installed.
