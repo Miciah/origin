@@ -6,13 +6,13 @@ import (
 
 	"github.com/golang/glog"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	kclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util/wait"
+	kapi "k8s.io/kubernetes/pkg/api"
+	kclient "k8s.io/kubernetes/pkg/client"
+	"k8s.io/kubernetes/pkg/kubectl"
+	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/util"
+	"k8s.io/kubernetes/pkg/util/wait"
 
 	deployapi "github.com/openshift/origin/pkg/deploy/api"
 	stratsupport "github.com/openshift/origin/pkg/deploy/strategy/support"
@@ -177,7 +177,7 @@ func (s *RollingDeploymentStrategy) Deploy(from *kapi.ReplicationController, to 
 	// https://github.com/GoogleCloudPlatform/kubernetes/pull/7183
 	to, err = s.client.GetReplicationController(to.Namespace, to.Name)
 	if err != nil {
-		return fmt.Errorf("couldn't look up deployment %s: %s", deployutil.LabelForDeployment(to))
+		return fmt.Errorf("couldn't look up deployment %s: %s", deployutil.LabelForDeployment(to), err)
 	}
 	if _, hasSourceId := to.Annotations[sourceIdAnnotation]; !hasSourceId {
 		to.Annotations[sourceIdAnnotation] = fmt.Sprintf("%s:%s", from.Name, from.ObjectMeta.UID)

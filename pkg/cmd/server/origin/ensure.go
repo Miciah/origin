@@ -7,12 +7,12 @@ import (
 
 	"github.com/golang/glog"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	kapierror "github.com/GoogleCloudPlatform/kubernetes/pkg/api/errors"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/serviceaccount"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
+	kapi "k8s.io/kubernetes/pkg/api"
+	kapierror "k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/controller/serviceaccount"
+	"k8s.io/kubernetes/pkg/fields"
+	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/util"
 
 	"github.com/openshift/origin/pkg/cmd/admin/policy"
 
@@ -69,7 +69,7 @@ func (c *MasterConfig) ensureOpenShiftInfraNamespace() {
 			Users:               usernames,
 		}
 		if err := addRole.AddRole(); err != nil {
-			glog.Errorf("Could not add %v users to the %v cluster role: %v\n", ns, usernames, clusterRole, err)
+			glog.Errorf("Could not add %v users to the %v cluster role: %v\n", usernames, clusterRole, err)
 		} else {
 			glog.V(2).Infof("Added %v users to the %v cluster role: %v\n", usernames, clusterRole, err)
 		}
@@ -152,7 +152,8 @@ func (c *MasterConfig) ensureDefaultNamespaceServiceAccountRoles() {
 func (c *MasterConfig) ensureDefaultSecurityContextConstraints() {
 	sccList, err := c.KubeClient().SecurityContextConstraints().List(labels.Everything(), fields.Everything())
 	if err != nil {
-		glog.Errorf("Unable to initialize security context constraints: %v", err)
+		glog.Errorf("Unable to initialize security context constraints: %v.  This may prevent the creation of pods", err)
+		return
 	}
 	if len(sccList.Items) > 0 {
 		return

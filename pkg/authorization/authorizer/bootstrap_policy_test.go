@@ -3,10 +3,10 @@ package authorizer
 import (
 	"testing"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/auth/user"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
+	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/auth/user"
+	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/util"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
 
@@ -506,7 +506,7 @@ func newInvalidExtensionPolicies() []authorizationapi.Policy {
 						{
 							Verbs:                 util.NewStringSet("watch", "list", "get"),
 							Resources:             util.NewStringSet("buildConfigs"),
-							AttributeRestrictions: runtime.EmbeddedObject{&authorizationapi.Role{}},
+							AttributeRestrictions: runtime.EmbeddedObject{Object: &authorizationapi.Role{}},
 						},
 						{
 							Verbs:     util.NewStringSet("update"),

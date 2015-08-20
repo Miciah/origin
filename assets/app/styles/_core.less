@@ -209,14 +209,17 @@ html, body {
     border-top: 0;
   }
   .template-options {
+    line-height: 1.5;
     .list-unstyled {
-      line-height: 1.5;
+      .options {
+        margin-bottom: 12px;
+      }
       .help-block {
-        margin-top: 0;
+        margin: 0 0 5px 2px;
       }
     }
     .help-block {
-      margin-left: 2px;
+      margin-bottom: 5px;
     }
   }
 }
@@ -301,6 +304,12 @@ html, body {
   }
 }
 
+label.required:before {
+  content: '*';
+  position: absolute;
+  left: 10px;
+}
+
 .btn-xs {
   padding: 0 4px;
 }
@@ -329,6 +338,57 @@ code {
 
 .table-responsive {
   overflow-x: auto; // remove when we update to latest patternfly with twbs 3.3.4
+}
+
+.table-events {
+  background-color: #fff;
+  > tbody {
+    + tbody {
+      border-top-width: 1px;
+    }
+  }
+  tr {
+    @media (min-width: @screen-md-min) {
+      td.event-time {
+        white-space: nowrap;
+      }
+    }
+  }
+}
+@media (max-width: @screen-xs-max) {
+  .table-events {
+    thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead tr {
+      /* Hide table headers (but not display: none;, for accessibility) */
+      .sr-only();
+    }
+    > tbody {
+      > tr {
+        > td {
+           /* Behave like a row */
+          border: none;
+          border-bottom: 1px solid #eee;
+          padding: 3px 6px 2px 35%;
+          position: relative;
+          &:last-child {
+            border-bottom: none;
+          }
+          &:before {
+            /* Act as mobile table header */
+            content: attr(data-title);
+            position: absolute;
+            top: 3px;
+            left: 6px;
+            width: 35%; 
+            padding-right: 10px; 
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
 }
 
 .gutter-top-bottom {

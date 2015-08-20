@@ -12,8 +12,8 @@ import (
 	"github.com/docker/distribution/registry/auth"
 	"golang.org/x/net/context"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
+	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/runtime"
 
 	"github.com/openshift/origin/pkg/api/latest"
 	"github.com/openshift/origin/pkg/authorization/api"
@@ -66,10 +66,10 @@ func TestVerifyImageStreamAccess(t *testing.T) {
 		err = verifyImageStreamAccess("foo", "bar", "create", client)
 		if err == nil || test.expectedError == nil {
 			if err != test.expectedError {
-				t.Fatal("verifyImageStreamAccess did not get expected error - got %s - expected %s", err, test.expectedError)
+				t.Fatalf("verifyImageStreamAccess did not get expected error - got %s - expected %s", err, test.expectedError)
 			}
 		} else if err.Error() != test.expectedError.Error() {
-			t.Fatal("verifyImageStreamAccess did not get expected error - got %s - expected %s", err, test.expectedError)
+			t.Fatalf("verifyImageStreamAccess did not get expected error - got %s - expected %s", err, test.expectedError)
 		}
 		server.Close()
 	}

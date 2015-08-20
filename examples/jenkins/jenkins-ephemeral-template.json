@@ -34,9 +34,6 @@
         "portalIP": "",
         "type": "ClusterIP",
         "sessionAffinity": "None"
-      },
-      "status": {
-        "loadBalancer": {}
       }
     },
     {
@@ -126,8 +123,7 @@
             "dnsPolicy": "ClusterFirst"
           }
         }
-      },
-      "status": {}
+      }
     }
   ],
   "parameters": [

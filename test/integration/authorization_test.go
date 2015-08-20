@@ -1,4 +1,4 @@
-// +build integration,!no-etcd
+// +build integration,etcd
 
 package integration
 
@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	kapierror "github.com/GoogleCloudPlatform/kubernetes/pkg/api/errors"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util/wait"
+	kapierror "k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/kubernetes/pkg/fields"
+	"k8s.io/kubernetes/pkg/labels"
+	"k8s.io/kubernetes/pkg/util"
+	"k8s.io/kubernetes/pkg/util/wait"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
 	"github.com/openshift/origin/pkg/client"
@@ -340,7 +340,7 @@ func TestAuthorizationSubjectAccessReview(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	dannyClient, err := testutil.GetClientForUser(*clusterAdminClientConfig, "danny")
+	dannyClient, _, _, err := testutil.GetClientForUser(*clusterAdminClientConfig, "danny")
 	if err != nil {
 		t.Fatalf("error requesting token: %v", err)
 	}
@@ -461,7 +461,7 @@ func TestAuthorizationSubjectAccessReview(t *testing.T) {
 		review:          askCanClusterAdminsCreateProject,
 		response: authorizationapi.SubjectAccessReviewResponse{
 			Allowed:   true,
-			Reason:    "allowed by cluster rule:",
+			Reason:    "allowed by cluster rule",
 			Namespace: "",
 		},
 	}.run(t)

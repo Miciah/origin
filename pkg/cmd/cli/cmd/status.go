@@ -8,7 +8,7 @@ import (
 	"github.com/gonum/graph/encoding/dot"
 	"github.com/spf13/cobra"
 
-	cmdutil "github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl/cmd/util"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 
 	"github.com/openshift/origin/pkg/cmd/cli/describe"
 	"github.com/openshift/origin/pkg/cmd/util/clientcmd"
@@ -68,7 +68,7 @@ func RunStatus(f *clientcmd.Factory, out io.Writer) error {
 		return err
 	}
 
-	describer := &describe.ProjectStatusDescriber{kclient, client}
+	describer := &describe.ProjectStatusDescriber{K: kclient, C: client}
 	s, err := describer.Describe(namespace, "")
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func RunGraph(f *clientcmd.Factory, out io.Writer) error {
 		return err
 	}
 
-	describer := &describe.ProjectStatusDescriber{kclient, client}
+	describer := &describe.ProjectStatusDescriber{K: kclient, C: client}
 	g, _, err := describer.MakeGraph(namespace)
 	if err != nil {
 		return err

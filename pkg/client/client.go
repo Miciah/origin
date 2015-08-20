@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	kclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
+	kclient "k8s.io/kubernetes/pkg/client"
 
 	"github.com/openshift/origin/pkg/api/latest"
 	"github.com/openshift/origin/pkg/version"
@@ -26,15 +26,18 @@ type Interface interface {
 	DeploymentConfigsNamespacer
 	RoutesNamespacer
 	HostSubnetsInterface
+	NetNamespacesInterface
 	ClusterNetworkingInterface
 	IdentitiesInterface
 	UsersInterface
+	GroupsInterface
 	UserIdentityMappingsInterface
 	ProjectsInterface
 	ProjectRequestsInterface
 	ResourceAccessReviewsNamespacer
 	ClusterResourceAccessReviews
 	SubjectAccessReviewsNamespacer
+	SubjectAccessReviewsImpersonator
 	ClusterSubjectAccessReviews
 	TemplatesNamespacer
 	TemplateConfigsNamespacer
@@ -99,9 +102,14 @@ func (c *Client) Routes(namespace string) RouteInterface {
 	return newRoutes(c, namespace)
 }
 
-// HostSubnet provides a REST client for HostSubnet
+// HostSubnets provides a REST client for HostSubnet
 func (c *Client) HostSubnets() HostSubnetInterface {
 	return newHostSubnet(c)
+}
+
+// NetNamespaces provides a REST client for NetNamespace
+func (c *Client) NetNamespaces() NetNamespaceInterface {
+	return newNetNamespace(c)
 }
 
 // ClusterNetwork provides a REST client for ClusterNetworking
@@ -122,6 +130,11 @@ func (c *Client) Identities() IdentityInterface {
 // UserIdentityMappings provides a REST client for UserIdentityMapping
 func (c *Client) UserIdentityMappings() UserIdentityMappingInterface {
 	return newUserIdentityMappings(c)
+}
+
+// Groups provides a REST client for Groups
+func (c *Client) Groups() GroupInterface {
+	return newGroups(c)
 }
 
 // Projects provides a REST client for Projects
@@ -176,7 +189,12 @@ func (c *Client) ClusterResourceAccessReviews() ResourceAccessReviewInterface {
 
 // SubjectAccessReviews provides a REST client for SubjectAccessReviews
 func (c *Client) SubjectAccessReviews(namespace string) SubjectAccessReviewInterface {
-	return newSubjectAccessReviews(c, namespace)
+	return newSubjectAccessReviews(c, namespace, "")
+}
+
+// ImpersonateSubjectAccessReviews provides a REST client for SubjectAccessReviews
+func (c *Client) ImpersonateSubjectAccessReviews(namespace, token string) SubjectAccessReviewInterface {
+	return newSubjectAccessReviews(c, namespace, token)
 }
 
 // ClusterSubjectAccessReviews provides a REST client for SubjectAccessReviews

@@ -3,9 +3,9 @@ package v1
 import (
 	"testing"
 
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
 	"github.com/ghodss/yaml"
+	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/util"
 
 	internal "github.com/openshift/origin/pkg/cmd/server/api"
 )
@@ -33,6 +33,7 @@ podManifestConfig:
   path: ""
 servingInfo:
   bindAddress: ""
+  bindNetwork: ""
   certFile: ""
   clientCA: ""
   keyFile: ""
@@ -52,14 +53,19 @@ assetConfig:
   publicURL: ""
   servingInfo:
     bindAddress: ""
+    bindNetwork: ""
     certFile: ""
     clientCA: ""
     keyFile: ""
     maxRequestsInFlight: 0
     requestTimeoutSeconds: 0
+controllerLeaseTTL: 0
+controllers: ""
 corsAllowedOrigins: null
+disabledFeatures: null
 dnsConfig:
   bindAddress: ""
+  bindNetwork: ""
 etcdClientInfo:
   ca: ""
   certFile: ""
@@ -70,11 +76,13 @@ etcdConfig:
   peerAddress: ""
   peerServingInfo:
     bindAddress: ""
+    bindNetwork: ""
     certFile: ""
     clientCA: ""
     keyFile: ""
   servingInfo:
     bindAddress: ""
+    bindNetwork: ""
     certFile: ""
     clientCA: ""
     keyFile: ""
@@ -216,6 +224,7 @@ oauthConfig:
   tokenConfig:
     accessTokenMaxAgeSeconds: 0
     authorizeTokenMaxAgeSeconds: 0
+pauseControllers: false
 policyConfig:
   bootstrapPolicyFile: ""
   openshiftInfrastructureNamespace: ""
@@ -234,6 +243,7 @@ serviceAccountConfig:
   publicKeyFiles: null
 servingInfo:
   bindAddress: ""
+  bindNetwork: ""
   certFile: ""
   clientCA: ""
   keyFile: ""

@@ -61,6 +61,7 @@ readonly OPENSHIFT_BINARY_SYMLINKS=(
   openshift-sti-build
   openshift-docker-build
   origin
+  atomic-enterprise
   osc
   oadm
   osadm
@@ -419,8 +420,8 @@ os::build::os_version_vars() {
 # os::build::kube_version_vars returns the version of Kubernetes we have
 # vendored.
 os::build::kube_version_vars() {
-  KUBE_GIT_VERSION=$(go run "${OS_ROOT}/hack/version.go" "${OS_ROOT}/Godeps/Godeps.json" "github.com/GoogleCloudPlatform/kubernetes/pkg/api" "comment")
-  KUBE_GIT_COMMIT=$(go run "${OS_ROOT}/hack/version.go" "${OS_ROOT}/Godeps/Godeps.json" "github.com/GoogleCloudPlatform/kubernetes/pkg/api")
+  KUBE_GIT_VERSION=$(go run "${OS_ROOT}/hack/version.go" "${OS_ROOT}/Godeps/Godeps.json" "k8s.io/kubernetes/pkg/api" "comment")
+  KUBE_GIT_COMMIT=$(go run "${OS_ROOT}/hack/version.go" "${OS_ROOT}/Godeps/Godeps.json" "k8s.io/kubernetes/pkg/api")
 }
 
 # Saves the environment flags to $1
@@ -459,8 +460,8 @@ os::build::ldflags() {
     ldflags+=(-X "${OS_GO_PACKAGE}/pkg/version.minorFromGit" "${OS_GIT_MINOR}")
     ldflags+=(-X "${OS_GO_PACKAGE}/pkg/version.versionFromGit" "${OS_GIT_VERSION}")
     ldflags+=(-X "${OS_GO_PACKAGE}/pkg/version.commitFromGit" "${OS_GIT_COMMIT}")
-    ldflags+=(-X "github.com/GoogleCloudPlatform/kubernetes/pkg/version.gitCommit" "${KUBE_GIT_COMMIT}")
-    ldflags+=(-X "github.com/GoogleCloudPlatform/kubernetes/pkg/version.gitVersion" "${KUBE_GIT_VERSION}")
+    ldflags+=(-X "k8s.io/kubernetes/pkg/version.gitCommit" "${KUBE_GIT_COMMIT}")
+    ldflags+=(-X "k8s.io/kubernetes/pkg/version.gitVersion" "${KUBE_GIT_VERSION}")
 
     # The -ldflags parameter takes a single string, so join the output.
     echo "${ldflags[*]-}"
@@ -475,7 +476,7 @@ os::build::gen-docs() {
   # We do this in a tmpdir in case the dest has other non-autogenned files
   # We don't want to include them in the list of gen'd files
   local tmpdir="${OS_ROOT}/_tmp/gen_doc"
-  mkdir "${tmpdir}"
+  mkdir -p "${tmpdir}"
   # generate the new files
   ${cmd} "${tmpdir}"
   # create the list of generated files

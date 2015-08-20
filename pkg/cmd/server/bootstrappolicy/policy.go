@@ -1,9 +1,9 @@
 package bootstrappolicy
 
 import (
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/runtime"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/util"
+	kapi "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/util"
 
 	authorizationapi "github.com/openshift/origin/pkg/authorization/api"
 )
@@ -125,7 +125,7 @@ func GetBootstrapClusterRoles() []authorizationapi.ClusterRole {
 				{Verbs: util.NewStringSet("list"), Resources: util.NewStringSet("projectrequests")},
 				{Verbs: util.NewStringSet("list", "get"), Resources: util.NewStringSet("clusterroles")},
 				{Verbs: util.NewStringSet("list"), Resources: util.NewStringSet("projects")},
-				{Verbs: util.NewStringSet("create"), Resources: util.NewStringSet("subjectaccessreviews"), AttributeRestrictions: runtime.EmbeddedObject{&authorizationapi.IsPersonalSubjectAccessReview{}}},
+				{Verbs: util.NewStringSet("create"), Resources: util.NewStringSet("subjectaccessreviews"), AttributeRestrictions: runtime.EmbeddedObject{Object: &authorizationapi.IsPersonalSubjectAccessReview{}}},
 			},
 		},
 		{
@@ -143,7 +143,7 @@ func GetBootstrapClusterRoles() []authorizationapi.ClusterRole {
 			Rules: []authorizationapi.PolicyRule{
 				{
 					Verbs:           util.NewStringSet("get"),
-					NonResourceURLs: util.NewStringSet("/healthz", "/healthz/*", "/version", "/api", "/oapi", "/osapi"),
+					NonResourceURLs: util.NewStringSet("/healthz", "/healthz/*", "/version", "/api", "/oapi", "/osapi", "/api/", "/oapi/", "/osapi/"),
 				},
 			},
 		},
@@ -456,6 +456,10 @@ func GetBootstrapClusterRoles() []authorizationapi.ClusterRole {
 				},
 				{
 					Verbs:     util.NewStringSet("get", "list", "watch"),
+					Resources: util.NewStringSet("netnamespaces"),
+				},
+				{
+					Verbs:     util.NewStringSet("get", "list", "watch"),
 					Resources: util.NewStringSet("nodes"),
 				},
 				{
@@ -473,6 +477,10 @@ func GetBootstrapClusterRoles() []authorizationapi.ClusterRole {
 				{
 					Verbs:     util.NewStringSet("get", "list", "watch", "create", "delete"),
 					Resources: util.NewStringSet("hostsubnets"),
+				},
+				{
+					Verbs:     util.NewStringSet("get", "list", "watch", "create", "delete"),
+					Resources: util.NewStringSet("netnamespaces"),
 				},
 				{
 					Verbs:     util.NewStringSet("get", "list", "watch"),

@@ -9,12 +9,12 @@ import (
 
 	"github.com/spf13/cobra"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
-	kerrors "github.com/GoogleCloudPlatform/kubernetes/pkg/api/errors"
-	kclient "github.com/GoogleCloudPlatform/kubernetes/pkg/client"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/fields"
-	cmdutil "github.com/GoogleCloudPlatform/kubernetes/pkg/kubectl/cmd/util"
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/labels"
+	kapi "k8s.io/kubernetes/pkg/api"
+	kerrors "k8s.io/kubernetes/pkg/api/errors"
+	kclient "k8s.io/kubernetes/pkg/client"
+	"k8s.io/kubernetes/pkg/fields"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/labels"
 
 	"github.com/openshift/origin/pkg/client"
 	"github.com/openshift/origin/pkg/cmd/cli/describe"
@@ -289,9 +289,9 @@ func (c *retryDeploymentCommand) retry(config *deployapi.DeploymentConfig, out i
 	if status := deployutil.DeploymentStatusFor(deployment); status != deployapi.DeploymentStatusFailed {
 		message := fmt.Sprintf("#%d is %s; only failed deployments can be retried.\n", config.LatestVersion, status)
 		if status == deployapi.DeploymentStatusComplete {
-			message += fmt.Sprintf("You can start a new deployment using the --latest option.")
+			message += "You can start a new deployment using the --latest option."
 		} else {
-			message += fmt.Sprintf("Optionally, you can cancel this deployment using the --cancel option.", config.LatestVersion)
+			message += "Optionally, you can cancel this deployment using the --cancel option."
 		}
 
 		return fmt.Errorf(message)

@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/credentialprovider"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"k8s.io/kubernetes/pkg/credentialprovider"
 )
 
 //TODO: Remove this code once the methods in Kubernetes kubelet/dockertools/config.go are public
@@ -52,7 +52,7 @@ func (h *Helper) GetDockerAuth(imageName, authType string) (docker.AuthConfigura
 	}
 	cfg, err := readDockercfg(dockercfgPath)
 	if err != nil {
-		glog.Errorf("Reading %s failed: ", dockercfgPath, err)
+		glog.Errorf("Reading %s failed: %v", dockercfgPath, err)
 		return docker.AuthConfiguration{}, false
 	}
 	keyring := credentialprovider.BasicDockerKeyring{}

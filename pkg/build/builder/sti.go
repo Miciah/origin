@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"os"
 
-	kapi "github.com/GoogleCloudPlatform/kubernetes/pkg/api"
 	"github.com/golang/glog"
 	stiapi "github.com/openshift/source-to-image/pkg/api"
 	"github.com/openshift/source-to-image/pkg/api/describe"
 	"github.com/openshift/source-to-image/pkg/api/validation"
 	sti "github.com/openshift/source-to-image/pkg/build/strategies"
 	stidocker "github.com/openshift/source-to-image/pkg/docker"
+	kapi "k8s.io/kubernetes/pkg/api"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/openshift/origin/pkg/build/api"
@@ -75,6 +75,15 @@ func (s *STIBuilder) Build() error {
 		config.Ref = s.build.Spec.Source.Git.Ref
 	}
 
+	allowedUIDs := os.Getenv("ALLOWED_UIDS")
+	glog.V(2).Infof("The value of ALLOWED_UIDS is [%s]", allowedUIDs)
+	if len(allowedUIDs) > 0 {
+		err := config.AllowedUIDs.Set(allowedUIDs)
+		if err != nil {
+			return err
+		}
+	}
+
 	if errs := validation.ValidateConfig(config); len(errs) != 0 {
 		var buffer bytes.Buffer
 		for _, ve := range errs {
@@ -95,7 +104,7 @@ func (s *STIBuilder) Build() error {
 	if err != nil {
 		return err
 	}
-	defer removeImage(s.dockerClient, tag)
+
 	glog.V(4).Infof("Starting S2I build from %s/%s BuildConfig ...", s.build.Namespace, s.build.Name)
 
 	origProxy := make(map[string]string)
