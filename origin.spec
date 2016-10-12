@@ -22,12 +22,12 @@
 # %commit and %ldflags are intended to be set by tito custom builders provided
 # in the .tito/lib directory. The values in this spec file will not be kept up to date.
 %{!?commit:
-%global commit aa601518ff6f192df73166008f00e87d5640f454
+%global commit 508cae2818877be9e44d724f9ba0655636cd4a0d
 }
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 # ldflags from hack/common.sh os::build:ldflags
 %{!?ldflags:
-%global ldflags -X github.com/openshift/origin/pkg/version.majorFromGit 3 -X github.com/openshift/origin/pkg/version.minorFromGit 2+ -X github.com/openshift/origin/pkg/version.versionFromGit v3.2.1.14 -X github.com/openshift/origin/pkg/version.commitFromGit aa60151 -X k8s.io/kubernetes/pkg/version.gitCommit aa60151 -X k8s.io/kubernetes/pkg/version.gitVersion v1.2.0-36-g4a3f9c5
+%global ldflags -X github.com/openshift/origin/pkg/version.majorFromGit 3 -X github.com/openshift/origin/pkg/version.minorFromGit 2+ -X github.com/openshift/origin/pkg/version.versionFromGit v3.2.1.15-2-g508cae2 -X github.com/openshift/origin/pkg/version.commitFromGit 508cae2 -X k8s.io/kubernetes/pkg/version.gitCommit 508cae2 -X k8s.io/kubernetes/pkg/version.gitVersion v1.2.0-36-g4a3f9c5
 }
 
 %if 0%{?fedora} || 0%{?epel}
@@ -47,7 +47,7 @@
 Name:           atomic-openshift
 # Version is not kept up to date and is intended to be set by tito custom
 # builders provided in the .tito/lib directory of this project
-Version:        3.2.1.15
+Version:        3.2.1.17
 Release:        1%{?dist}
 Summary:        Open Source Container Management by Red Hat
 License:        ASL 2.0
@@ -489,6 +489,10 @@ fi
 
 
 %changelog
+* Wed Oct 12 2016 Scott Dodson <sdodson@redhat.com> 3.2.1.17
+- UPSTREAM: 34524: Test x509 intermediates correctly (jliggitt@redhat.com)
+- Test x509 intermediates correctly (jliggitt@redhat.com)
+
 * Tue Aug 23 2016 Scott Dodson <sdodson@redhat.com> 3.2.1.15
 - Update ldflags for golang-1.4 vs golang-1.6 differences
 
