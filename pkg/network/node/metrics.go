@@ -161,7 +161,7 @@ func updateARPMetrics() {
 		return
 	}
 
-	max, err := strconv.Atoi(string(data))
+	max, err := strconv.Atoi(strings.TrimSpace(string(data)))
 	if err == nil {
 		available := max - used
 		if available < 0 {
