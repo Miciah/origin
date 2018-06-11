@@ -6758,6 +6758,7 @@ items:
       spec:
         containers:
         - image: openshift/origin-base
+          imagePullPolicy: IfNotPresent
           name: idling-echo
           command:
             - /usr/bin/socat
@@ -6827,6 +6828,7 @@ items:
       spec:
         containers:
         - image: openshift/origin-base
+          imagePullPolicy: IfNotPresent
           name: idling-tcp-echo
           command:
             - /usr/bin/socat
@@ -6836,6 +6838,7 @@ items:
           - containerPort: 8675
             protocol: TCP
         - image: openshift/origin-base
+          imagePullPolicy: IfNotPresent
           name: idling-udp-echo
           command:
             - /usr/bin/socat
@@ -9899,6 +9902,7 @@ items:
       spec:
         containers:
         - image: openshift/origin-node
+          imagePullPolicy: IfNotPresent
           name: router-http-echo
           command:
             - /usr/bin/socat
