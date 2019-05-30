@@ -582,14 +582,20 @@ func findRequestedNodePort(port int, servicePorts []api.ServicePort) int {
 // allocateHealthCheckNodePort allocates health check node port to service.
 func allocateHealthCheckNodePort(service *api.Service, nodePortOp *portallocator.PortAllocationOperation) error {
 	healthCheckNodePort := service.Spec.HealthCheckNodePort
+	klog.V(4).Infof("Determining HealthCheck NodePort for service %s/%s", service.Namespace, service.Name)
 	if healthCheckNodePort != 0 {
-		// If the request has a health check nodePort in mind, attempt to reserve it.
-		err := nodePortOp.Allocate(int(healthCheckNodePort))
-		if err != nil {
-			return fmt.Errorf("failed to allocate requested HealthCheck NodePort %v: %v",
-				healthCheckNodePort, err)
+		klog.V(4).Infof("User provided a healthCheckNodePort: %d", healthCheckNodePort)
+		if nodePortOp.Has(int(healthCheckNodePort)) {
+			klog.V(4).Infof("Using user-provided healthCheckNodePort: %d", healthCheckNodePort)
+		} else {
+			// If the request has a health check nodePort in mind, attempt to reserve it.
+			err := nodePortOp.Allocate(int(healthCheckNodePort))
+			if err != nil {
+				return fmt.Errorf("failed to allocate requested HealthCheck NodePort %v: %v",
+					healthCheckNodePort, err)
+			}
+			klog.V(4).Infof("Reserved user requested healthCheckNodePort: %d", healthCheckNodePort)
 		}
-		klog.V(4).Infof("Reserved user requested healthCheckNodePort: %d", healthCheckNodePort)
 	} else {
 		// If the request has no health check nodePort specified, allocate any.
 		healthCheckNodePort, err := nodePortOp.AllocateNext()

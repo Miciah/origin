@@ -162,6 +162,12 @@ func (op *PortAllocationOperation) AllocateNext() (int, error) {
 	return port, err
 }
 
+// Has returns true if the provided port is already allocated and a call
+// to Allocate(port) would fail with ErrAllocated.
+func (op *PortAllocationOperation) Has(port int) bool {
+	return op.pa.Has(port)
+}
+
 // Marks a port so that it will be released if this operation Commits
 func (op *PortAllocationOperation) ReleaseDeferred(port int) {
 	op.releaseDeferred = append(op.releaseDeferred, port)
