@@ -193,6 +193,40 @@ func (rsc *ReplicaSetController) Run(workers int, stopCh <-chan struct{}) {
 	<-stopCh
 }
 
+// getReplicaSetsWithSameController returns a list of ReplicaSets with the same
+// owner as the given ReplicaSet.
+func (rsc *ReplicaSetController) getReplicaSetsWithSameController(rs *apps.ReplicaSet) []*apps.ReplicaSet {
+	controllerRef := metav1.GetControllerOf(rs)
+	if controllerRef == nil {
+		utilruntime.HandleError(fmt.Errorf("ReplicaSet has no controller: %v", rs))
+		return nil
+	}
+
+	list, err := rsc.rsLister.ReplicaSets(rs.Namespace).List(labels.Everything())
+	if err != nil {
+		utilruntime.HandleError(err)
+		return nil
+	}
+
+	var rss []*apps.ReplicaSet
+	for _, otherRs := range list {
+		if otherRef := metav1.GetControllerOf(otherRs); otherRef != nil && otherRef.UID == controllerRef.UID {
+			rss = append(rss, otherRs)
+		}
+	}
+
+	if len(rss) == 0 {
+		// Note: This is impossible because at least rs should have the
+		// same controller as itself.
+		utilruntime.HandleError(fmt.Errorf("no ReplicaSet has controller %v", controllerRef))
+		return nil
+	}
+
+	klog.V(2).Infof("Found %d related %vs for %v %s/%s: %v", len(rss), rsc.Kind, rsc.Kind, rs.Namespace, rs.Name, rss)
+
+	return rss
+}
+
 // getPodReplicaSets returns a list of ReplicaSets matching the given pod.
 func (rsc *ReplicaSetController) getPodReplicaSets(pod *v1.Pod) []*apps.ReplicaSet {
 	rss, err := rsc.rsLister.GetPodReplicaSets(pod)
@@ -515,8 +549,13 @@ func (rsc *ReplicaSetController) manageReplicas(filteredPods []*v1.Pod, rs *apps
 		}
 		klog.V(2).Infof("Too many replicas for %v %s/%s, need %d, deleting %d", rsc.Kind, rs.Namespace, rs.Name, *(rs.Spec.Replicas), diff)
 
+		relatedPods, err := rsc.getIndirectlyRelatedPods(rs)
+		if err != nil {
+			return err
+		}
+
 		// Choose which Pods to delete, preferring those in earlier phases of startup.
-		podsToDelete := getPodsToDelete(filteredPods, diff)
+		podsToDelete := getPodsToDelete(filteredPods, relatedPods, diff)
 
 		// Snapshot the UIDs (ns/name) of the pods we're expecting to see
 		// deleted, so we know to record their expectations exactly once either
@@ -681,15 +720,48 @@ func slowStartBatch(count int, initialBatchSize int, fn func() error) (int, erro
 	return successes, nil
 }
 
-func getPodsToDelete(filteredPods []*v1.Pod, diff int) []*v1.Pod {
+// getIndirectlyRelatedPods returns all pods that are owned by any ReplicaSet
+// that is owned by the given ReplicaSet's owner.
+func (rsc *ReplicaSetController) getIndirectlyRelatedPods(rs *apps.ReplicaSet) ([]*v1.Pod, error) {
+	result := []*v1.Pod{}
+	for _, relatedRs := range rsc.getReplicaSetsWithSameController(rs) {
+		selector, err := metav1.LabelSelectorAsSelector(relatedRs.Spec.Selector)
+		if err != nil {
+			return nil, err
+		}
+		pods, err := rsc.podLister.Pods(relatedRs.Namespace).List(selector)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, pods...)
+	}
+	klog.V(2).Infof("Found %d related pods for %v %s/%s: %v", len(result), rsc.Kind, rs.Namespace, rs.Name, result)
+	return result, nil
+}
+
+func getPodsToDelete(filteredPods []*v1.Pod, relatedPods []*v1.Pod, diff int) []*v1.Pod {
+	klog.V(2).Infof("filteredPods=%v, relatedPods=%v", filteredPods, relatedPods)
 	// No need to sort pods if we are about to delete all of them.
 	// diff will always be <= len(filteredPods), so not need to handle > case.
 	if diff < len(filteredPods) {
-		// Sort the pods in the order such that not-ready < ready, unscheduled
-		// < scheduled, and pending < running. This ensures that we delete pods
-		// in the earlier stages whenever possible.
-		sort.Sort(controller.ActivePods(filteredPods))
+		podReplicasOnNode := map[string]int{}
+		for _, pod := range relatedPods {
+			if !controller.IsPodActive(pod) {
+				continue
+			}
+			podReplicasOnNode[pod.Spec.NodeName]++
+		}
+
+		podsWithRanks := controller.ActivePodsWithRanks{
+			Pods: filteredPods,
+			Rank: make([]int, len(filteredPods)),
+		}
+		for i, pod := range podsWithRanks.Pods {
+			podsWithRanks.Rank[i] = podReplicasOnNode[pod.Spec.NodeName]
+		}
+		sort.Sort(podsWithRanks)
 	}
+	klog.V(2).Infof("filteredPods[:diff]=%v", filteredPods[:diff])
 	return filteredPods[:diff]
 }
 

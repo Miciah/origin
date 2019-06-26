@@ -1560,7 +1560,7 @@ func TestGetPodsToDelete(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		podsToDelete := getPodsToDelete(test.pods, test.diff)
+		podsToDelete := getPodsToDelete(test.pods, test.pods, test.diff)
 		if len(podsToDelete) != len(test.expectedPodsToDelete) {
 			t.Errorf("%s: unexpected pods to delete, expected %v, got %v", test.name, test.expectedPodsToDelete, podsToDelete)
 		}
